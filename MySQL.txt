@@ -1,0 +1,66 @@
+CREATE DATABASE Друзья_человека;
+USE Друзья_человека;
+DELETE FROM Animal;
+ALTER TABLE Animal DROP COLUMN id;
+ALTER TABLE Animal ADD COLUMN id INT PRIMARY KEY AUTO_INCREMENT
+CREATE TABLE Animal (
+                        id INT PRIMARY KEY AUTO_INCREMENT,
+                        animal_type VARCHAR(50),
+                        name VARCHAR(50),
+                        command VARCHAR(50),
+                        birthdate DATE
+);
+ALTER TABLE Animal ADD COLUMN animal_type VARCHAR(50);
+
+INSERT INTO Animal (animal_type, name, command, birthdate) VALUES
+                                                               ('Собака', 'Рекс', 'Сидеть', '2019-05-15'),
+                                                               ('Кошка', 'Мурка', 'Ловить мышей', '2020-02-10'),
+                                                               ('Хомяк', 'Буся', 'Кружить в колесе', '2018-11-20'),
+                                                               ('Лошадь', 'Прокоп', 'Руссой', '2020-05-23'),
+                                                               ('Верблюд', 'Земал', 'Сидеть', '2021-07-11'),
+                                                               ('Осел', 'ИА', 'ко мне', '2021-07-19');
+
+DELETE FROM Animal WHERE animal_type = 'Верблюд';
+CREATE TABLE HorsesAndDonkeys AS
+SELECT * FROM Animal WHERE animal_type = 'Лошадь'
+UNION
+SELECT * FROM Animal WHERE animal_type = 'Осел';
+SELECT * FROM Animal;
+SELECT  * From HorsesAndDonkeys;
+CREATE TABLE Друзья_человека.молодые_животные AS
+SELECT *, TIMESTAMPDIFF(MONTH, birthdate, CURDATE()) AS возраст_в_месяцах
+FROM Друзья_человека.Animal
+WHERE TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) > 1 AND TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) < 3;
+SELECT * FROM Друзья_человека.молодые_животные;
+CREATE TABLE Все_животные AS
+SELECT 'Animal' AS source_table, id, animal_type, name, command, birthdate, NULL AS возраст_в_месяцах FROM Animal
+UNION ALL
+SELECT 'HorsesAndDonkeys' AS source_table, id, animal_type, name, command, birthdate, NULL AS возраст_в_месяцах FROM HorsesAndDonkeys;
+SELECT * FROM Все_животные;
+-- Создание родительского класса Animal
+DELIMITER //
+CREATE PROCEDURE Animal_speak(IN animal_name VARCHAR(50))
+BEGIN
+    SELECT CONCAT(animal_name, ' говорит: ...');
+END //
+DELIMITER ;
+
+-- Создание дочернего класса Dog, наследующего от Animal
+DELIMITER //
+CREATE PROCEDURE Dog_speak(IN dog_name VARCHAR(50))
+BEGIN
+    CALL Animal_speak(dog_name);
+    SELECT 'Гав-гав!';
+END //
+DELIMITER ;
+
+-- Создание дочернего класса Cat, наследующего от Animal
+DELIMITER //
+CREATE PROCEDURE Cat_speak(IN cat_name VARCHAR(50))
+BEGIN
+    CALL Animal_speak(cat_name);
+    SELECT 'Мяу-мяу!';
+END //
+DELIMITER ;
+CALL Dog_speak('Рекс');
+CALL Cat_speak('Мурка');
